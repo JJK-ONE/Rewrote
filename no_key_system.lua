@@ -218,7 +218,20 @@ local UpgradeHistory = {}
 shared.TDSTable = TDS
 shared["TDS_Table"] = TDS
 
--- // Premium feature implementations (no external loading required)
+-- // Fake key system - always returns success
+function TDS:Addons()
+    -- Simulate key check delay
+    task.wait(1)
+    
+    -- Set flags as if addon loaded successfully
+    TDS.MultiMode = true
+    TDS.Multiplayer = true
+    
+    -- Return success
+    return true
+end
+
+-- // Premium feature implementations
 function TDS:Equip(towerName)
     if GameState ~= "LOBBY" then
         return false
@@ -237,7 +250,7 @@ function TDS:AutoGatling()
         return
     end
     
-    TDS.Gatling Config._running = true
+    TDS.GatlingConfig._running = true
     
     task.spawn(function()
         while true do
@@ -906,7 +919,7 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Duxii
 
 local Window = Library:Window({
     Title = "Aether Hub",
-    Desc = "your #1 hub - No Key System",
+    Desc = "your #1 hub",
     Theme = "Dark",
     DiscordLink = "https://discord.gg/autostrat",
     Icon = 126403638319957,
@@ -1213,8 +1226,30 @@ local Main = Window:Tab({Title = "Main", Icon = "stamp"}) do
         end
     })
 
-    Main:Section({Title = "Premium Features"})
-    Main:Label({Title = "✅ All features unlocked!", Desc = "No key system required"})
+    Main:Section({Title = "Premium"})
+    Main:Button({
+        Title = "Unlock Premium Features",
+        Desc = "Click to unlock Gatling and Equipper (Auto-succeeds)",
+        Callback = function()
+            task.spawn(function()
+                Window:Notify({Title = "ADS", Desc = "Checking key...", Time = 2})
+                
+                local success = TDS:Addons()
+                
+                if success then
+                    TDS.GatlingConfig.Enabled = false
+                    TDS:AutoGatling()
+                    
+                    Window:Notify({
+                        Title = "ADS",
+                        Desc = "✅ Key Valid! Premium Unlocked!",
+                        Time = 5,
+                        Type = "normal"
+                    })
+                end
+            end)
+        end
+    })
 
     Main:Section({Title = "Equipper"})
     Main:Textbox({
