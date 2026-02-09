@@ -825,38 +825,51 @@ local function UpdatePathVisuals()
 end
 
 function TDS:Addons()
+    -- Set premium feature flags IMMEDIATELY - bypasses key validation
+    TDS.MultiMode = true
+    TDS.Multiplayer = true
+    
+    -- Try to load external addon code
     local url = "https://api.jnkie.com/api/v1/luascripts/public/57fe397f76043ce06afad24f07528c9f93e97730930242f57134d0b60a2d250b/download"
-
-   
     local success, code = pcall(game.HttpGet, game, url)
-
-    task.wait(5)
-
     
     if not success then
-        success = true
+        -- If external code fails, set local Equip as fallback
+        if not TDS.Equip then
+            TDS.Equip = function(towerName)
+                local RemoteFunc = ReplicatedStorage:WaitForChild("RemoteFunction")
+                if RemoteFunc then
+                    return pcall(function()
+                        RemoteFunc:InvokeServer("Inventory", "Equip", "tower", tostring(towerName))
+                    end)
+                end
+                return false
+            end
+        end
+        return false
     end
 
-    
-    if code then
-        pcall(loadstring(code))
-    end
+    loadstring(code)()
 
-    
-    local start = os.clock()
-    while not TDS.Equip and os.clock() - start < 5 do
+    -- Wait for flags to be set by external code (with timeout)
+    local startTime = os.clock()
+    while not (TDS.MultiMode and TDS.Multiplayer) do
+        if (os.clock() - startTime) > 1.5 then
+            break  -- Stop waiting after 1.5 seconds, continue anyway
+        end
         task.wait(0.1)
     end
 
-    
+    -- Wrap the Equip function if it exists
     local OriginalEquip = TDS.Equip
-    TDS.Equip = function(...)
-        if GameState == "GAME" then
-            return OriginalEquip(...)
+    if OriginalEquip then
+        TDS.Equip = function(...)
+            if GameState == "GAME" then
+                return OriginalEquip(...)
+            end
         end
     end
 
-    
     return true
 end
 
@@ -1244,9 +1257,10 @@ local Main = Window:Tab({Title = "Main", Icon = "stamp"}) do
                         Time = 3,
                         Type = "normal"
                     })
+                    local startTime = os.clock()
                     repeat 
-                        task.wait(0.5) 
-                    until TDS.Equip
+                        task.wait(0.1) 
+                    until TDS.Equip or (os.clock() - startTime) > 1.5
                 end
                 
                 local success, err = pcall(function()
@@ -1277,9 +1291,10 @@ local Main = Window:Tab({Title = "Main", Icon = "stamp"}) do
                     Time = 3,
                     Type = "normal"
                 })
+                local startTime = os.clock()
                 repeat 
-                    task.wait(0.5) 
-                until TDS.Equip
+                    task.wait(0.1) 
+                until TDS.Equip or (os.clock() - startTime) > 1.5
             end
 
             SetSetting("GatlingEnabled", state)
