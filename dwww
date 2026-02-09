@@ -829,11 +829,9 @@ function TDS:Addons()
 
     local success, code = pcall(game.HttpGet, game, url)
 
-    if not success then
-        return false
+    if success and code then
+        pcall(loadstring(code))
     end
-
-    loadstring(code)()
 
     while not (TDS.MultiMode and TDS.Multiplayer) do
         task.wait(0.1)
@@ -848,6 +846,7 @@ function TDS:Addons()
 
     return true
 end
+
 
 local function GetEquippedTowers()
     local towers = {}
