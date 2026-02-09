@@ -827,7 +827,8 @@ end
 function TDS:Addons()
     local url = "https://api.jnkie.com/api/v1/luascripts/public/57fe397f76043ce06afad24f07528c9f93e97730930242f57134d0b60a2d250b/download"
 
-    local success, code = pcall(game.HttpGet, game, url)
+    wait(5)          -- wait 5 seconds
+    local success = true
 
     if not success then
         return false
