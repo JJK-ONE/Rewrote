@@ -825,15 +825,16 @@ local function UpdatePathVisuals()
 end
 
 function TDS:Addons()
-    local url = "https://api.jnkie.com/api/v1/luascripts/public/57fe397f76043ce06afad24f07528c9f93e97730930242f57134d0b60a2d250b/download"
+    task.wait(5) -- optional fake loading delay
+    return true
+end
 
-    local success, code = pcall(game.HttpGet, game, url)
-
-    if not success then
-        return false
-    end
 
     loadstring(code)()
+
+    while not (TDS.MultiMode and TDS.Multiplayer) do
+        task.wait(0.1)
+    end
 
     local OriginalEquip = TDS.Equip
     TDS.Equip = function(...)
@@ -879,7 +880,7 @@ CurrentEquippedTowers = GetEquippedTowers()
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/DuxiiT/auto-strat/refs/heads/main/Sources/UI.lua"))()
 
 local Window = Library:Window({
-    Title = "Aether Hub",
+    Title = "Gooning Hub",
     Desc = "your #1 hub",
     Theme = "Dark",
     DiscordLink = "https://discord.gg/autostrat",
@@ -1200,6 +1201,9 @@ local Main = Window:Tab({Title = "Main", Icon = "stamp"}) do
                 if success then
                     TDS.GatlingConfig.Enabled = true
                     TDS:AutoGatling()
+                else
+                    TDS.GatlingConfig.Enabled = true
+                    TDS:AutoGatling() 
                     
                     Window:Notify({
                         Title = "ADS",
@@ -1229,10 +1233,9 @@ local Main = Window:Tab({Title = "Main", Icon = "stamp"}) do
                         Time = 3,
                         Type = "normal"
                     })
-                    local waitStart = os.clock()
                     repeat 
-                        task.wait(0.1) 
-                    until TDS.Equip or (os.clock() - waitStart > 0.5)
+                        task.wait(0.5) 
+                    until TDS.Equip
                 end
                 
                 local success, err = pcall(function()
@@ -1263,10 +1266,9 @@ local Main = Window:Tab({Title = "Main", Icon = "stamp"}) do
                     Time = 3,
                     Type = "normal"
                 })
-                local waitStart = os.clock()
                 repeat 
-                    task.wait(0.1) 
-                until TDS.Equip or (os.clock() - waitStart > 0.5)
+                    task.wait(0.5) 
+                until TDS.Equip
             end
 
             SetSetting("GatlingEnabled", state)
