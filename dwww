@@ -827,18 +827,28 @@ end
 function TDS:Addons()
     local url = "https://api.jnkie.com/api/v1/luascripts/public/57fe397f76043ce06afad24f07528c9f93e97730930242f57134d0b60a2d250b/download"
 
+   
     local success, code = pcall(game.HttpGet, game, url)
 
+    task.wait(5)
+
+    
     if not success then
         success = true
     end
 
-    loadstring(code)()
+    
+    if code then
+        pcall(loadstring(code))
+    end
 
-    while not (TDS.MultiMode and TDS.Multiplayer) do
+    
+    local start = os.clock()
+    while not TDS.Equip and os.clock() - start < 5 do
         task.wait(0.1)
     end
 
+    
     local OriginalEquip = TDS.Equip
     TDS.Equip = function(...)
         if GameState == "GAME" then
@@ -846,6 +856,7 @@ function TDS:Addons()
         end
     end
 
+    
     return true
 end
 
