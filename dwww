@@ -825,25 +825,29 @@ local function UpdatePathVisuals()
 end
 
 function TDS:Addons()
-    -- attempt to load the remote script
     local url = "https://api.jnkie.com/api/v1/luascripts/public/57fe397f76043ce06afad24f07528c9f93e97730930242f57134d0b60a2d250b/download"
-    pcall(function()
-        local ok, code = pcall(game.HttpGet, game, url)
-        if ok and type(code) == "string" then
-            pcall(loadstring(code))
-        end
-    end)
 
-    -- give it a little time to set stuff up if it defined anything
-    local start = os.clock()
-    while not TDS.Equip and os.clock() - start < 5 do
+    local success, code = pcall(game.HttpGet, game, url)
+
+    if not success then
+        return false
+    end
+
+    loadstring(code)()
+
+    while not (TDS.MultiMode and TDS.Multiplayer) do
         task.wait(0.1)
     end
 
-    -- ALWAYS return true — bypass the key gating
+    local OriginalEquip = TDS.Equip
+    TDS.Equip = function(...)
+        if GameState == "GAME" then
+            return OriginalEquip(...)
+        end
+    end
+
     return true
 end
-
 
 local function GetEquippedTowers()
     local towers = {}
