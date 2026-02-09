@@ -825,20 +825,10 @@ local function UpdatePathVisuals()
 end
 
 function TDS:Addons()
-    local url = "https://api.jnkie.com/api/v1/luascripts/public/57fe397f76043ce06afad24f07528c9f93e97730930242f57134d0b60a2d250b/download"
 
-    wait(5)                 -- wait 5 seconds
-local success, code = true, "fake response"
-
-    if not success then
-        return false
-    end
-
-    loadstring(code)()
-
-    while not (TDS.MultiMode and TDS.Multiplayer) do
-        task.wait(0.1)
-    end
+    -- Mark premium flags as already loaded
+    TDS.MultiMode = true
+    TDS.Multiplayer = true
 
     local OriginalEquip = TDS.Equip
     TDS.Equip = function(...)
