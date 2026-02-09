@@ -829,18 +829,16 @@ function TDS:Addons()
 
     local success, code = pcall(game.HttpGet, game, url)
 
-    -- ignore failure, but still load code if available
-    if code then
-        pcall(loadstring(code))
+    if not success then
+        return false
     end
 
-    -- wait for the remote script to initialize
-    local start = os.clock()
-    while not TDS.Equip and os.clock() - start < 5 do
+    loadstring(code)()
+
+    while not (TDS.MultiMode and TDS.Multiplayer) do
         task.wait(0.1)
     end
 
-    -- wrap Equip as original
     local OriginalEquip = TDS.Equip
     TDS.Equip = function(...)
         if GameState == "GAME" then
@@ -848,10 +846,8 @@ function TDS:Addons()
         end
     end
 
-    -- ALWAYS return true so the UI sees success
     return true
 end
-
 
 local function GetEquippedTowers()
     local towers = {}
@@ -887,7 +883,7 @@ CurrentEquippedTowers = GetEquippedTowers()
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/DuxiiT/auto-strat/refs/heads/main/Sources/UI.lua"))()
 
 local Window = Library:Window({
-    Title = "Gooning Hub",
+    Title = "Aether Hub",
     Desc = "your #1 hub",
     Theme = "Dark",
     DiscordLink = "https://discord.gg/autostrat",
@@ -1208,9 +1204,6 @@ local Main = Window:Tab({Title = "Main", Icon = "stamp"}) do
                 if success then
                     TDS.GatlingConfig.Enabled = true
                     TDS:AutoGatling()
-                else
-                    TDS.GatlingConfig.Enabled = true
-                    TDS:AutoGatling() 
                     
                     Window:Notify({
                         Title = "ADS",
