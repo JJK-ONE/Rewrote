@@ -825,6 +825,7 @@ local function UpdatePathVisuals()
 end
 
 function TDS:Addons()
+    task.wait(2)
         return true
     end
 
