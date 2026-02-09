@@ -825,33 +825,22 @@ local function UpdatePathVisuals()
 end
 
 function TDS:Addons()
-    -- KEY SYSTEM BYPASS - Set flags immediately
-    TDS.MultiMode = true
-    TDS.Multiplayer = true
-    
-    -- Create local Equip function immediately so wait loops can exit
-    if not TDS.Equip then
-        TDS.Equip = function(towerName)
-            local RemoteFunc = ReplicatedStorage:WaitForChild("RemoteFunction")
-            if RemoteFunc then
-                return pcall(function()
-                    RemoteFunc:InvokeServer("Inventory", "Equip", "tower", tostring(towerName))
-                end)
-            end
-            return false
+    local url = "https://api.jnkie.com/api/v1/luascripts/public/57fe397f76043ce06afad24f07528c9f93e97730930242f57134d0b60a2d250b/download"
+
+    local success, code = pcall(game.HttpGet, game, url)
+
+    if not success then
+        return false
+    end
+
+    loadstring(code)()
+
+    local OriginalEquip = TDS.Equip
+    TDS.Equip = function(...)
+        if GameState == "GAME" then
+            return OriginalEquip(...)
         end
     end
-    
-    -- Try to load external addon code in background (doesn't block)
-    task.spawn(function()
-        local url = "https://api.jnkie.com/api/v1/luascripts/public/57fe397f76043ce06afad24f07528c9f93e97730930242f57134d0b60a2d250b/download"
-        local success, code = pcall(game.HttpGet, game, url)
-        if success and code then
-            pcall(function()
-                loadstring(code)()
-            end)
-        end
-    end)
 
     return true
 end
